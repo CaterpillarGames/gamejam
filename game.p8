@@ -241,12 +241,14 @@ function makeEnemy(x, y)
 	return {
 		duration = 0,
 		pos = vec2(x, y),
+		age = 0,
 		isInRange = function(self)
 			return gs.base.pos:isWithin(self.pos, 15)
 		end,
 		update = function(self)
 			self.attackCountdown = max(self.attackCountdown - 1, 0)
 			if not self:isInRange() then
+				self.age += 1
 				self.pos += vec2(0, 20) * gs.dt
 			else
 				self:tryAttack()
@@ -270,8 +272,15 @@ function makeEnemy(x, y)
 				self.isDead = true
 			end
 		end,
+		walkIndex = function(self)
+			return (self.age \ 15)%2
+		end,
 		draw = function(self)
-			print('enemy', self.pos.x, self.pos.y, 7)
+			local text = 'enemy'
+			if self:walkIndex() == 1 then
+				text = 'ENEMY'
+			end
+			print(text, self.pos.x, self.pos.y, 7)
 			print(self.health, self.pos.x, self.pos.y+6, 7)
 		end
 	}
