@@ -52,24 +52,62 @@ function _init()
 		currentAnimation = nil,
 		cursor = makeCursor(),
 		base = makeBase(),
+		reserveTowers = {
+			makeTower(10, 120, towerTypes.standard)
+		},
 		towers = {
-			makeTower(32, 64, towerTypes.short)
+			makeTower(32, 64, towerTypes.standard)
 		},
 		enemies = {
 			makeEnemy(64, 20)
 		},
 		projectiles = {}
 	}
+
 end
 
 function makeCursor()
 	return {
 		pos = vec2(64, 64),
+		graspedEntity = nil,
+		isLeadingClick = false,
+		clickedThisFrame = false,
+		clickedLastFrame = false,
 		update = function(self) 
+			self.clickedThisFrame = (stat(34) & 0x1) > 0 or btn(dirs.x) 
+			self.isLeadingClick = self.clickedThisFrame and not self.clickedLastFrame
+			self.clickedLastFrame = self.clickedThisFrame
 			self.pos = vec2(
 				stat(32), stat(33))
+
+			if self.graspedEntity == nil then
+				local hovered = self:getHoveredTower()
+				if hovered != nil then
+					if self.isLeadingClick then
+						self.graspedEntity = hovered:clone()
+					end
+				end
+			else
+				self.graspedEntity.pos = self.pos:clone()
+			end
+
+		end,
+		getHoveredTower = function(self)
+			for tower in all(gs.reserveTowers) do
+				if tower.pos:isWithin(self.pos, 10) then
+					return tower
+				end
+			end
+			return nil
 		end,
 		draw = function(self)
+			if self.graspedEntity != nil then
+				self.graspedEntity:draw()
+			end
+			local hovered = self:getHoveredTower()
+			if hovered != nil then
+				rect(hovered.pos.x - 4, hovered.pos.y - 8, hovered.pos.x + 10, hovered.pos.y + 6)
+			end
 			spr(0, self.pos.x - 4, self.pos.y - 4)
 		end
 	}
@@ -105,7 +143,11 @@ towerTypes = {
 function makeTower(x, y, type)
 	assert(type != nil)
 	return {
+		isModel = false,
 		pos = vec2(x,y),
+		clone = function(self)
+			return makeTower(self.pos.x, self.pos.y, self.type)
+		end,
 		type = type,
 		towerSpriteNumber = type.towerSpriteNumber,
 		attackStrength = type.attackStrength,
@@ -120,6 +162,9 @@ function makeTower(x, y, type)
 			self.lockedOnEnemy = gs.enemies[1]
 		end,
 		targetTheta = function(self)
+			if self.isModel then
+				return 0
+			end
 			local enemy = self.lockedOnEnemy
 			if enemy == nil then
 				return 0
@@ -141,6 +186,9 @@ function makeTower(x, y, type)
 			end
 		end,
 		tryAttack = function(self, enemy)
+			if self.isModel then
+				return
+			end
 			if self.attackCountdown > 0 then
 				return
 			end
@@ -401,7 +449,15 @@ function _update()
 	checkGameOver()
 
 	gs.cursor:update()
+
+	--checkTowerGrasping()
 end
+
+-- function checkTowerGrasping()
+-- 	if gs.cursor.isLeadingClick then
+
+-- 	end
+-- end
 
 function checkGameOver()
 	if gs.base.isDead then
@@ -504,6 +560,9 @@ function _draw()
 		enemy:draw()
 	end
 	for tower in all(gs.towers) do
+		tower:draw()
+	end
+	for tower in all(gs.reserveTowers) do
 		tower:draw()
 	end
 	for proj in all(gs.projectiles) do
