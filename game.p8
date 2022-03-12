@@ -48,9 +48,23 @@ function _init()
 		startTime = t(),
 		endTime = nil,
 		currentAnimation = nil,
+		base = makeBase(),
 		enemies = {
 			makeEnemy(64, 20)
 		}
+	}
+end
+
+function makeBase()
+	return {
+		pos = vec2(64, 100),
+		health = 100,
+		draw = function(self)
+			print('base', self.pos.x, self.pos.y, 7)
+			print(self.health, self.pos.x, self.pos.y + 10, 7)
+		end,
+		update = function(self) 
+		end
 	}
 end
 
@@ -187,6 +201,8 @@ function _update()
 	end
 
 	clearDead()
+
+	gs.base:update()
 end
 
 function clearDead()
@@ -214,6 +230,9 @@ function makeEnemy(x, y)
 			--self:takeDamage(0.1)
 		end,
 		health = 10,
+		attackStrength = 5,
+		attackCooldown = 10,
+		attackCountdown = 0,
 		isDead = false,
 		takeDamage = function(self, amount)
 			self.health -= amount
@@ -223,7 +242,7 @@ function makeEnemy(x, y)
 		end,
 		draw = function(self)
 			print('e', self.pos.x, self.pos.y, 7)
-			print(self.health, self.pos.x, self.pos.y+4, 7)
+			print(self.health, self.pos.x, self.pos.y+6, 7)
 		end
 	}
 
@@ -240,9 +259,12 @@ function _draw()
 		return
 	end
 
+	gs.base:draw()
 	for enemy in all(gs.enemies) do
 		enemy:draw()
 	end
+
+
 
 	-- Draw
 end
