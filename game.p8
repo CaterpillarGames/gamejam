@@ -49,9 +49,122 @@ function _init()
 		endTime = nil,
 		currentAnimation = nil,
 		base = makeBase(),
+		towers = {
+			makeTower(32, 64, towerTypes.standard)
+		},
 		enemies = {
 			makeEnemy(64, 20)
-		}
+		},
+		projectiles = {}
+	}
+end
+
+towerTypes = {
+	standard = {
+		name = 'standard',
+		attackCooldown = 10,
+		attackStrength = 2,
+		projectileSpeed = 40
+	},
+	long = {
+		name = 'long',
+		attackCooldown = 10,
+		attackStrength = 2,
+		projectileSpeed = 40
+	},
+	short = {
+		name = 'short',
+		attackCooldown = 10,
+		attackStrength = 2,
+		projectileSpeed = 40
+	}
+}
+
+function makeTower(x, y, type)
+	assert(type != nil)
+	return {
+		pos = vec2(x,y),
+		type = type,
+		attackStrength = type.attackStrength,
+		attackCooldown = type.attackCooldown,
+		attackCountdown = 0,
+		projectileSpeed = type.projectileSpeed,
+		theta = 0,
+		omega = 0.01,
+		lockedOnEnemy = nil,
+		setEnemyLock = function(self)
+			-- TODO
+			self.lockedOnEnemy = gs.enemies[1]
+		end,
+		targetTheta = function(self)
+			local enemy = self.lockedOnEnemy
+			if enemy == nil then
+				return 0
+			end
+			return atan2(enemy.pos.x - self.pos.x, enemy.pos.y - self.pos.y)
+		end,
+		update = function(self)
+			self:setEnemyLock()
+			self.attackCountdown = max(0, self.attackCountdown - 1)
+			-- local dtheta = self:targetTheta() - self.theta
+			-- if abs(dtheta) > self.omega then
+			-- 	dtheta = self.omega * sgn(dtheta)
+			-- end
+			-- self.theta += dtheta
+			self.theta = self:targetTheta()
+
+			if self.lockedOnEnemy != nil then
+				self:tryAttack(self.lockedOnEnemy)
+			end
+		end,
+		tryAttack = function(self, enemy)
+			if self.attackCountdown > 0 then
+				return
+			end
+			self:launchProjectile(enemy.pos)
+			self.attackCountdown = self.attackCooldown			
+		end,
+		launchProjectile = function(self, targetVec2)
+			local proj = makeProjectile(
+				self.pos, 
+				vec2fromAngle(self.theta) * self.projectileSpeed, 
+				self.attackStrength,
+				0)
+			add(gs.projectiles, proj)
+		end,
+		draw = function(self)
+			local tipLocation = self.pos + 10 * vec2fromAngle(self.theta)
+			line(self.pos.x, self.pos.y, tipLocation.x, tipLocation.y, 7)
+		end
+	}
+end
+
+function makeProjectile(pos, vel, attackStrength, spriteNumber)
+	return {
+		pos = pos,
+		vel = vel,
+		isDead = false,
+		attackStrength = attackStrength,
+		spriteNumber = spriteNumber,
+		draw = function(self)
+			print('O', self.pos.x, self.pos.y, 7)
+		end,
+		getInRangeEnemy = function(self)
+			for enemy in all(gs.enemies) do
+				if self.pos:isWithin(enemy.pos, 10) then
+					return enemy
+				end
+			end
+			return nil
+		end,
+		update = function(self)
+			self.pos += self.vel * gs.dt
+			local enemy = self:getInRangeEnemy()
+			if enemy != nil then
+				enemy:takeDamage(self.attackStrength)
+				self.isDead = true
+			end
+		end
 	}
 end
 
@@ -207,6 +320,14 @@ function _update()
 		enemy:update()
 	end
 
+	for tower in all(gs.towers) do
+		tower:update()
+	end
+
+	for proj in all(gs.projectiles) do
+		proj:update()
+	end
+
 	clearDead()
 
 	gs.base:update()
@@ -227,6 +348,11 @@ function clearDead()
 			del(gs.enemies, enemy)
 		end
 	end
+	for proj in all(gs.projectiles) do
+		if proj.isDead then
+			del(gs.projectiles, proj)
+		end
+	end
 end
 
 function drawGameOverWin()
@@ -241,12 +367,14 @@ function makeEnemy(x, y)
 	return {
 		duration = 0,
 		pos = vec2(x, y),
+		age = 0,
 		isInRange = function(self)
 			return gs.base.pos:isWithin(self.pos, 15)
 		end,
 		update = function(self)
 			self.attackCountdown = max(self.attackCountdown - 1, 0)
 			if not self:isInRange() then
+				self.age += 1
 				self.pos += vec2(0, 20) * gs.dt
 			else
 				self:tryAttack()
@@ -260,7 +388,7 @@ function makeEnemy(x, y)
 			self.attackCountdown = self.attackCooldown
 		end,
 		health = 10,
-		attackStrength = 20,
+		attackStrength = 1,
 		attackCooldown = 10,
 		attackCountdown = 0,
 		isDead = false,
@@ -270,8 +398,15 @@ function makeEnemy(x, y)
 				self.isDead = true
 			end
 		end,
+		walkIndex = function(self)
+			return (self.age \ 15)%2
+		end,
 		draw = function(self)
-			print('enemy', self.pos.x, self.pos.y, 7)
+			local text = 'enemy'
+			if self:walkIndex() == 1 then
+				text = 'ENEMY'
+			end
+			print(text, self.pos.x, self.pos.y, 7)
 			print(self.health, self.pos.x, self.pos.y+6, 7)
 		end
 	}
@@ -293,8 +428,12 @@ function _draw()
 	for enemy in all(gs.enemies) do
 		enemy:draw()
 	end
-
-
+	for tower in all(gs.towers) do
+		tower:draw()
+	end
+	for proj in all(gs.projectiles) do
+		proj:draw()
+	end
 
 	-- Draw
 end
