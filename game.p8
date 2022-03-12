@@ -66,7 +66,7 @@ function makeBase()
 		isDead = false,
 		takeDamage = function(self, amount)
 			self.health -= amount
-			if self.heatlh <= 0 then
+			if self.health <= 0 then
 				self.isDead = true
 			end
 		end,
@@ -145,8 +145,8 @@ function vec2(x, y)
 		eucDist = function(self, other)
 			local dx = self.x - other.x
 			local dy = self.y - other.y
-			-- return sqrt(dx * dx + dy * dy)
-			return approx_magnitude(dx, dy)
+			return sqrt(dx * dx + dy * dy)
+			--return approx_magnitude(dx, dy)
 		end,
 		isWithin = function(self, other, value)
 			return self:taxiDist(other) <= value and
@@ -241,12 +241,26 @@ function makeEnemy(x, y)
 	return {
 		duration = 0,
 		pos = vec2(x, y),
+		isInRange = function(self)
+			return gs.base.pos:isWithin(self.pos, 15)
+		end,
 		update = function(self)
-			self.pos += vec2(0, 5) * gs.dt
-			--self:takeDamage(0.1)
+			self.attackCountdown = max(self.attackCountdown - 1, 0)
+			if not self:isInRange() then
+				self.pos += vec2(0, 20) * gs.dt
+			else
+				self:tryAttack()
+			end
+		end,
+		tryAttack = function(self)
+			if self.attackCountdown > 0 then
+				return
+			end
+			gs.base:takeDamage(self.attackStrength)
+			self.attackCountdown = self.attackCooldown
 		end,
 		health = 10,
-		attackStrength = 5,
+		attackStrength = 20,
 		attackCooldown = 10,
 		attackCountdown = 0,
 		isDead = false,
@@ -257,7 +271,7 @@ function makeEnemy(x, y)
 			end
 		end,
 		draw = function(self)
-			print('e', self.pos.x, self.pos.y, 7)
+			print('enemy', self.pos.x, self.pos.y, 7)
 			print(self.health, self.pos.x, self.pos.y+6, 7)
 		end
 	}
