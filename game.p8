@@ -49,9 +49,59 @@ function _init()
 		endTime = nil,
 		currentAnimation = nil,
 		base = makeBase(),
+		towers = {
+			makeTower(32, 64, towerTypes.standard)
+		},
 		enemies = {
 			makeEnemy(64, 20)
 		}
+	}
+end
+
+towerTypes = {
+	standard = {
+		name = 'standard',
+		attackCooldown = 10
+	},
+	long = {
+		name = 'long',
+		attackCooldown = 10
+	},
+	short = {
+		name = 'short',
+		attackCooldown = 10
+	}
+}
+
+function makeTower(x, y, type)
+	assert(type != nil)
+	return {
+		pos = vec2(x,y),
+		type = type,
+		attackCooldown = type.attackCooldown,
+		attackCountdown = 0,
+		theta = 0,
+		omega = 0.01,
+		getLockedOnEnemy = function()
+			-- TODO
+			return gs.enemies[1]
+		end,
+		targetTheta = function(self)
+			local enemy = self:getLockedOnEnemy()
+			return atan2(enemy.pos.x - self.pos.x, enemy.pos.y - self.pos.y)
+		end,
+		update = function(self)
+			-- local dtheta = self:targetTheta() - self.theta
+			-- if abs(dtheta) > self.omega then
+			-- 	dtheta = self.omega * sgn(dtheta)
+			-- end
+			-- self.theta += dtheta
+			self.theta = self:targetTheta()
+		end,
+		draw = function(self)
+			local tipLocation = self.pos + 10 * vec2fromAngle(self.theta)
+			line(self.pos.x, self.pos.y, tipLocation.x, tipLocation.y, 7)
+		end
 	}
 end
 
@@ -207,6 +257,10 @@ function _update()
 		enemy:update()
 	end
 
+	for tower in all(gs.towers) do
+		tower:update()
+	end
+
 	clearDead()
 
 	gs.base:update()
@@ -262,7 +316,7 @@ function makeEnemy(x, y)
 			self.attackCountdown = self.attackCooldown
 		end,
 		health = 10,
-		attackStrength = 20,
+		attackStrength = 1,
 		attackCooldown = 10,
 		attackCountdown = 0,
 		isDead = false,
@@ -302,7 +356,9 @@ function _draw()
 	for enemy in all(gs.enemies) do
 		enemy:draw()
 	end
-
+	for tower in all(gs.towers) do
+		tower:draw()
+	end
 
 
 	-- Draw
