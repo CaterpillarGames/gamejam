@@ -186,6 +186,15 @@ function _update()
 		enemy:update()
 	end
 
+	clearDead()
+end
+
+function clearDead()
+	for enemy in all(gs.enemies) do
+		if enemy.isDead then
+			del(gs.enemies, enemy)
+		end
+	end
 end
 
 function drawGameOverWin()
@@ -202,9 +211,19 @@ function makeEnemy(x, y)
 		pos = vec2(x, y),
 		update = function(self)
 			self.pos += vec2(0, 5) * gs.dt
+			--self:takeDamage(0.1)
+		end,
+		health = 10,
+		isDead = false,
+		takeDamage = function(self, amount)
+			self.health -= amount
+			if self.health <= 0 then
+				self.isDead = true
+			end
 		end,
 		draw = function(self)
 			print('e', self.pos.x, self.pos.y, 7)
+			print(self.health, self.pos.x, self.pos.y+4, 7)
 		end
 	}
 
