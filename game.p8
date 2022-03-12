@@ -63,6 +63,13 @@ function makeBase()
 			print('base', self.pos.x, self.pos.y, 7)
 			print(self.health, self.pos.x, self.pos.y + 10, 7)
 		end,
+		isDead = false,
+		takeDamage = function(self, amount)
+			self.health -= amount
+			if self.heatlh <= 0 then
+				self.isDead = true
+			end
+		end,
 		update = function(self) 
 		end
 	}
@@ -203,6 +210,15 @@ function _update()
 	clearDead()
 
 	gs.base:update()
+
+	checkGameOver()
+end
+
+function checkGameOver()
+	if gs.base.isDead then
+		gs.gameOverState = 'lose'
+		gs.isGameOver = true
+	end
 end
 
 function clearDead()
@@ -218,7 +234,7 @@ function drawGameOverWin()
 end
 
 function drawGameOverLose()
-
+	print('you lost!')
 end
 
 function makeEnemy(x, y)
