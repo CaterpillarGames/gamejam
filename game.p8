@@ -107,6 +107,7 @@ function makeTower(x, y, type)
 	return {
 		pos = vec2(x,y),
 		type = type,
+		towerSpriteNumber = type.towerSpriteNumber,
 		attackStrength = type.attackStrength,
 		attackCooldown = type.attackCooldown,
 		attackCountdown = 0,
@@ -148,33 +149,34 @@ function makeTower(x, y, type)
 		end,
 		launchProjectile = function(self, targetVec2)
 			local proj = makeProjectile(
-				self.pos, 
+				self.pos + vec2fromAngle(self.theta) * 10, 
 				vec2fromAngle(self.theta) * self.projectileSpeed, 
 				self.attackStrength,
 				self.type.projectileSpriteNumber)
 			add(gs.projectiles, proj)
 		end,
 		draw = function(self)
-			spr(self.spriteNumber, self.pos.x, self.pos.y)
+			spr(self.spriteNumber, self.pos.x-4, self.pos.y-2)
 			local lineStart = self.pos:clone()
 			local lineEnd = lineStart + 8 * vec2fromAngle(self.theta)
 			local perp = vec2fromAngle(self.theta + 0.25)
 
+			useYellowTransparency()
 			for i = 0, 7 do
 				tline(lineEnd.x, lineEnd.y,
 					lineStart.x, lineStart.y,
-						i/8, 0,
+						self.towerSpriteNumber + i/8, 0,
 						0, 
 						1/8)
 				tline(lineEnd.x+1, lineEnd.y,
 					lineStart.x+1, lineStart.y, 
-						i/8, 0,
+						self.towerSpriteNumber + i/8, 0,
 						0, 
 						1/8)
 				lineStart += perp
 				lineEnd += perp
 			end
-
+			palt()
 			-- line(self.pos.x, self.pos.y, tipLocation.x, tipLocation.y, 7)
 
 
@@ -530,4 +532,4 @@ __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000666666605666668600000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000666666605666666600000000000000000000000000000000
 __map__
-0102030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001020300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
