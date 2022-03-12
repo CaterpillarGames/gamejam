@@ -160,9 +160,14 @@ function makeTower(x, y, type)
 			local lineEnd = lineStart + 8 * vec2fromAngle(self.theta)
 			local perp = vec2fromAngle(self.theta + 0.25)
 
-			for i = 0, 8 do
-				tline(lineStart.x, lineStart.y, 
-						lineEnd.x, lineEnd.y,
+			for i = 0, 7 do
+				tline(lineEnd.x, lineEnd.y,
+					lineStart.x, lineStart.y,
+						i/8, 0,
+						0, 
+						1/8)
+				tline(lineEnd.x+1, lineEnd.y,
+					lineStart.x+1, lineStart.y, 
 						i/8, 0,
 						0, 
 						1/8)
