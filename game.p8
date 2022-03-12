@@ -98,6 +98,9 @@ function makeTower(x, y, type)
 		end,
 		targetTheta = function(self)
 			local enemy = self.lockedOnEnemy
+			if enemy == nil then
+				return 0
+			end
 			return atan2(enemy.pos.x - self.pos.x, enemy.pos.y - self.pos.y)
 		end,
 		update = function(self)
@@ -140,13 +143,27 @@ function makeProjectile(pos, vel, attackStrength, spriteNumber)
 	return {
 		pos = pos,
 		vel = vel,
+		isDead = false,
 		attackStrength = attackStrength,
 		spriteNumber = spriteNumber,
 		draw = function(self)
-			print('o', self.pos.x, self.pos.y, 7)
+			print('O', self.pos.x, self.pos.y, 7)
+		end,
+		getInRangeEnemy = function(self)
+			for enemy in all(gs.enemies) do
+				if self.pos:isWithin(enemy.pos, 10) then
+					return enemy
+				end
+			end
+			return nil
 		end,
 		update = function(self)
 			self.pos += self.vel * gs.dt
+			local enemy = self:getInRangeEnemy()
+			if enemy != nil then
+				enemy:takeDamage(self.attackStrength)
+				self.isDead = true
+			end
 		end
 	}
 end
@@ -329,6 +346,11 @@ function clearDead()
 	for enemy in all(gs.enemies) do
 		if enemy.isDead then
 			del(gs.enemies, enemy)
+		end
+	end
+	for proj in all(gs.projectiles) do
+		if proj.isDead then
+			del(gs.projectiles, proj)
 		end
 	end
 end
