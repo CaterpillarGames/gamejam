@@ -40,6 +40,8 @@ dirs = {
 gameOverWin = 'win'
 gameOverLose = 'lose'
 
+poke(0x5f2d, 0x1 | 0x2)
+
 function _init()
 	gs = {
 		dt = 1/30,
@@ -48,6 +50,7 @@ function _init()
 		startTime = t(),
 		endTime = nil,
 		currentAnimation = nil,
+		cursor = makeCursor(),
 		base = makeBase(),
 		towers = {
 			makeTower(32, 64, towerTypes.standard)
@@ -56,6 +59,19 @@ function _init()
 			makeEnemy(64, 20)
 		},
 		projectiles = {}
+	}
+end
+
+function makeCursor()
+	return {
+		pos = vec2(64, 64),
+		update = function(self) 
+			self.pos = vec2(
+				stat(32), stat(33))
+		end,
+		draw = function(self)
+			spr(0, self.pos.x - 4, self.pos.y - 4)
+		end
 	}
 end
 
@@ -333,6 +349,8 @@ function _update()
 	gs.base:update()
 
 	checkGameOver()
+
+	gs.cursor:update()
 end
 
 function checkGameOver()
@@ -435,6 +453,7 @@ function _draw()
 		proj:draw()
 	end
 
+	gs.cursor:draw()
 	-- Draw
 end
 
