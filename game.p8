@@ -54,22 +54,29 @@ function _init()
 		},
 		enemies = {
 			makeEnemy(64, 20)
-		}
+		},
+		projectiles = {}
 	}
 end
 
 towerTypes = {
 	standard = {
 		name = 'standard',
-		attackCooldown = 10
+		attackCooldown = 10,
+		attackStrength = 2,
+		projectileSpeed = 40
 	},
 	long = {
 		name = 'long',
-		attackCooldown = 10
+		attackCooldown = 10,
+		attackStrength = 2,
+		projectileSpeed = 40
 	},
 	short = {
 		name = 'short',
-		attackCooldown = 10
+		attackCooldown = 10,
+		attackStrength = 2,
+		projectileSpeed = 40
 	}
 }
 
@@ -78,29 +85,68 @@ function makeTower(x, y, type)
 	return {
 		pos = vec2(x,y),
 		type = type,
+		attackStrength = type.attackStrength,
 		attackCooldown = type.attackCooldown,
 		attackCountdown = 0,
+		projectileSpeed = type.projectileSpeed,
 		theta = 0,
 		omega = 0.01,
-		getLockedOnEnemy = function()
+		lockedOnEnemy = nil,
+		setEnemyLock = function(self)
 			-- TODO
-			return gs.enemies[1]
+			self.lockedOnEnemy = gs.enemies[1]
 		end,
 		targetTheta = function(self)
-			local enemy = self:getLockedOnEnemy()
+			local enemy = self.lockedOnEnemy
 			return atan2(enemy.pos.x - self.pos.x, enemy.pos.y - self.pos.y)
 		end,
 		update = function(self)
+			self:setEnemyLock()
+			self.attackCountdown = max(0, self.attackCountdown - 1)
 			-- local dtheta = self:targetTheta() - self.theta
 			-- if abs(dtheta) > self.omega then
 			-- 	dtheta = self.omega * sgn(dtheta)
 			-- end
 			-- self.theta += dtheta
 			self.theta = self:targetTheta()
+
+			if self.lockedOnEnemy != nil then
+				self:tryAttack(self.lockedOnEnemy)
+			end
+		end,
+		tryAttack = function(self, enemy)
+			if self.attackCountdown > 0 then
+				return
+			end
+			self:launchProjectile(enemy.pos)
+			self.attackCountdown = self.attackCooldown			
+		end,
+		launchProjectile = function(self, targetVec2)
+			local proj = makeProjectile(
+				self.pos, 
+				vec2fromAngle(self.theta) * self.projectileSpeed, 
+				self.attackStrength,
+				0)
+			add(gs.projectiles, proj)
 		end,
 		draw = function(self)
 			local tipLocation = self.pos + 10 * vec2fromAngle(self.theta)
 			line(self.pos.x, self.pos.y, tipLocation.x, tipLocation.y, 7)
+		end
+	}
+end
+
+function makeProjectile(pos, vel, attackStrength, spriteNumber)
+	return {
+		pos = pos,
+		vel = vel,
+		attackStrength = attackStrength,
+		spriteNumber = spriteNumber,
+		draw = function(self)
+			print('o', self.pos.x, self.pos.y, 7)
+		end,
+		update = function(self)
+			self.pos += self.vel * gs.dt
 		end
 	}
 end
@@ -261,6 +307,10 @@ function _update()
 		tower:update()
 	end
 
+	for proj in all(gs.projectiles) do
+		proj:update()
+	end
+
 	clearDead()
 
 	gs.base:update()
@@ -359,7 +409,9 @@ function _draw()
 	for tower in all(gs.towers) do
 		tower:draw()
 	end
-
+	for proj in all(gs.projectiles) do
+		proj:draw()
+	end
 
 	-- Draw
 end
