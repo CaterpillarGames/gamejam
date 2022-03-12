@@ -56,7 +56,7 @@ function _init()
 			makeTower(10, 120, towerTypes.standard)
 		},
 		towers = {
-			makeTower(32, 64, towerTypes.standard)
+			--makeTower(32, 64, towerTypes.standard)
 		},
 		enemies = {
 			makeEnemy(64, 20)
@@ -89,6 +89,10 @@ function makeCursor()
 				end
 			else
 				self.graspedEntity.pos = self.pos:clone()
+				if self.isLeadingClick then
+					add(gs.towers, self.graspedEntity)
+					self.graspedEntity = nil
+				end
 			end
 
 		end,
@@ -503,7 +507,7 @@ function makeEnemy(x, y)
 			self.attackCountdown = max(self.attackCountdown - 1, 0)
 			if not self:isInRange() then
 				self.age += 1
-				self.pos += vec2(0, 20) * gs.dt
+				self.pos += vec2(0, 10) * gs.dt
 			else
 				self:tryAttack()
 			end
@@ -515,7 +519,7 @@ function makeEnemy(x, y)
 			gs.base:takeDamage(self.attackStrength)
 			self.attackCountdown = self.attackCooldown
 		end,
-		health = 10,
+		health = 40,
 		attackStrength = 1,
 		attackCooldown = 10,
 		attackCountdown = 0,
