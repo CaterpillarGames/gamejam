@@ -81,21 +81,24 @@ towerTypes = {
 		attackCooldown = 10,
 		attackStrength = 2,
 		projectileSpeed = 40,
-		projectileSpriteNumber = 8
+		projectileSpriteNumber = 8,
+		towerSpriteNumber = 1
 	},
 	long = {
 		name = 'long',
 		attackCooldown = 10,
 		attackStrength = 2,
 		projectileSpeed = 40,
-		projectileSpriteNumber = 8
+		projectileSpriteNumber = 8,
+		towerSpriteNumber = 3
 	},
 	short = {
 		name = 'short',
 		attackCooldown = 10,
 		attackStrength = 2,
 		projectileSpeed = 40,
-		projectileSpriteNumber = 9
+		projectileSpriteNumber = 9,
+		towerSpriteNumber = 2
 	}
 }
 
@@ -153,8 +156,24 @@ function makeTower(x, y, type)
 		end,
 		draw = function(self)
 			spr(self.spriteNumber, self.pos.x, self.pos.y)
-			local tipLocation = self.pos + 10 * vec2fromAngle(self.theta)
-			line(self.pos.x, self.pos.y, tipLocation.x, tipLocation.y, 7)
+			local lineStart = self.pos:clone()
+			local lineEnd = lineStart + 8 * vec2fromAngle(self.theta)
+			local perp = vec2fromAngle(self.theta + 0.25)
+
+			for i = 0, 8 do
+				tline(lineStart.x, lineStart.y, 
+						lineEnd.x, lineEnd.y,
+						i/8, 0,
+						0, 
+						1/8)
+				lineStart += perp
+				lineEnd += perp
+			end
+
+			-- line(self.pos.x, self.pos.y, tipLocation.x, tipLocation.y, 7)
+
+
+
 		end
 	}
 end
@@ -274,6 +293,7 @@ function vec2(x, y)
 	local ret = {
 		x = x,
 		y = y,
+
 		norm = function(self)
 			return vec2fromAngle(atan2(self.x, self.y))
 		end,
@@ -305,6 +325,9 @@ function vec2(x, y)
 		end,
 		angle = function(self)
 			return atan2(self.x, self.y)
+		end,
+		clone = function(self)
+			return vec2(self.x, self.y)
 		end
 	}
 
@@ -476,7 +499,7 @@ function _draw()
 end
 
 __gfx__
-00056000000ee00088888888000dd00000000000000000000000c000000000000000000000000000000000066666000000000000000000000000000000000000
+000560000005500022222222000dd00000000000000000000000c000000000000000000000000000000000066666000000000000000000000000000000000000
 00666c00000ee00008888880000d0000000fff000000000000cfff000000c00000000000000cc000000000666565600000000000000000000000000000000000
 00666c00000ee0000888cc80000d000000ffff00000fff0000ffff0000cfff000000c00000cccc00000000665656560000000000000000000000000000000000
 006660c000eeee000888cc80000d00000000780000ffff000000780000ffff00000cc0000cccccc0000000666565656000000000000000000000000000000000
@@ -492,3 +515,5 @@ __gfx__
 000000000000000000000000000000000000000000000000000000000000000000000000000000006ccc66666666666600000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000666666605666668600000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000666666605666666600000000000000000000000000000000
+__map__
+0102030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
