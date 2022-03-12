@@ -42,11 +42,15 @@ gameOverLose = 'lose'
 
 function _init()
 	gs = {
+		dt = 1/30,
 		isGameOver = false,
 		gameOverState = nil,
 		startTime = t(),
 		endTime = nil,
-		currentAnimation = nil
+		currentAnimation = nil,
+		enemies = {
+			makeEnemy(64, 20)
+		}
 	}
 end
 
@@ -178,6 +182,10 @@ function _update()
 
 	acceptInput()
 
+	for enemy in all(gs.enemies) do
+		enemy:update()
+	end
+
 end
 
 function drawGameOverWin()
@@ -185,6 +193,20 @@ function drawGameOverWin()
 end
 
 function drawGameOverLose()
+
+end
+
+function makeEnemy(x, y)
+	return {
+		duration = 0,
+		pos = vec2(x, y),
+		update = function(self)
+			self.pos += vec2(0, 5) * gs.dt
+		end,
+		draw = function(self)
+			print('e', self.pos.x, self.pos.y, 7)
+		end
+	}
 
 end
 
@@ -197,6 +219,10 @@ function _draw()
 			drawGameOverLose()
 		end
 		return
+	end
+
+	for enemy in all(gs.enemies) do
+		enemy:draw()
 	end
 
 	-- Draw
