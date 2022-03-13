@@ -53,7 +53,7 @@ function _init()
 		cursor = makeCursor(),
 		base = makeBase(),
 		reserveTowers = {
-			makeTower(10, 120, towerTypes.standard)
+			makeTower(8, 116, towerTypes.standard)
 		},
 		towers = {
 			--makeTower(32, 64, towerTypes.standard)
@@ -110,7 +110,7 @@ function makeCursor()
 			end
 			local hovered = self:getHoveredTower()
 			if hovered != nil then
-				rect(hovered.pos.x - 4, hovered.pos.y - 8, hovered.pos.x + 10, hovered.pos.y + 6)
+				rect(hovered.pos.x - 2, hovered.pos.y - 3, hovered.pos.x + 10, hovered.pos.y + 9)
 			end
 			local spriteNumber = 16
 			if self.graspedEntity != nil then
@@ -212,10 +212,10 @@ function makeTower(x, y, type)
 			add(gs.projectiles, proj)
 		end,
 		draw = function(self)
-			spr(self.spriteNumber, self.pos.x-4, self.pos.y-2)
-			local lineStart = self.pos:clone()
-			local lineEnd = lineStart + 8 * vec2fromAngle(self.theta)
+			spr(self.spriteNumber, self.pos.x-2, self.pos.y)
 			local perp = vec2fromAngle(self.theta + 0.25)
+			local lineStart = self.pos - perp * 4
+			local lineEnd = lineStart + 8 * vec2fromAngle(self.theta)
 
 			useYellowTransparency()
 			for i = 0, 7 do
