@@ -61,8 +61,8 @@ function _init()
 			--makeTower(32, 64, towerTypes.standard)
 		},
 		enemies = {
-			makeEnemy(44, 3),
-			makeEnemy(44, 48)
+			makeEnemy(44, 3, enemyTypes.paralegal),
+			makeEnemy(44, 48, enemyTypes.judge)
 		},
 		projectiles = {},
 		maxAllowedTowers = 2,
@@ -131,6 +131,30 @@ function makeCursor()
 		end
 	}
 end
+
+		-- speed = type.movementSpeed, --40,
+		-- health = type.health,
+		-- attackStrength = type.attackStrength,
+		-- attackCooldown = type.attackCooldown,
+
+enemyTypes = {
+	paralegal = {
+		name = 'paralegal',
+		attackCooldown = 10,
+		attackStrength = 2,
+		movementSpeed = 40,
+		health = 40,
+		spriteNumber = 4
+	},
+	judge = {
+		name = 'judge',
+		attackCooldown = 10,
+		attackStrength = 5,
+		movementSpeed = 20,
+		health = 100,
+		spriteNumber = 6
+	}
+}
 
 towerTypes = {
 	standard = {
@@ -537,12 +561,18 @@ function drawGameOverLose()
 	print('you lost!')
 end
 
-function makeEnemy(x, y)
+function makeEnemy(x, y, type)
 	return {
 		duration = 0,
+		type = type,
 		pos = vec2(x, y),
 		velDir = vec2(0, 1),
-		speed = 40,
+		speed = type.movementSpeed, --40,
+		health = type.health,
+		attackStrength = type.attackStrength,
+		attackCooldown = type.attackCooldown,
+		attackCountdown = 0,
+		spriteNumber = type.spriteNumber,
 		age = 0,
 		isInRange = function(self)
 			return gs.base.pos:isWithin(self.pos, 15)
@@ -581,10 +611,6 @@ function makeEnemy(x, y)
 			gs.base:takeDamage(self.attackStrength)
 			self.attackCountdown = self.attackCooldown
 		end,
-		health = 40,
-		attackStrength = 1,
-		attackCooldown = 10,
-		attackCountdown = 0,
 		isDead = false,
 		takeDamage = function(self, amount)
 			self.health -= amount
@@ -596,9 +622,9 @@ function makeEnemy(x, y)
 			return (self.age \ 15)%2
 		end,
 		draw = function(self)
-			local spriteNumber = 4
+			local spriteNumber = self.spriteNumber
 			if self:walkIndex() == 1 then
-				spriteNumber = 5
+				spriteNumber += 1
 			end
 			useYellowTransparency()
 			spr(spriteNumber, self.pos.x -4, self.pos.y-4)
