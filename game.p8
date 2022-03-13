@@ -61,16 +61,54 @@ function _init()
 			--makeTower(32, 64, towerTypes.standard)
 		},
 		enemies = {
-			makeEnemy(44, 3, enemyTypes.paralegal),
-			makeEnemy(44, 48, enemyTypes.judge)
+			--makeEnemy(44, 3, enemyTypes.paralegal),
+			--makeEnemy(44, 48, enemyTypes.judge)
 		},
 		projectiles = {},
+		waves = makeWaves(),
+		waveNumber = 0,
 		maxAllowedTowers = 2,
 		canGrabTower = function(self, tower)
 			return #self.towers < self.maxAllowedTowers
 		end
 	}
 
+end
+
+
+-- enemies is an array of a sequence of moves
+function makeWaves()
+	local ret = {
+		{
+			maxAllowedTowers = 1,
+			enemies = {
+				enemyTypes.paralegal
+			}
+		},
+
+		{
+			maxAllowedTowers = 2,
+			enemies = {
+				enemyTypes.paralegal,
+				enemyTypes.paralegal,
+				enemyTypes.judge
+			}
+		},
+
+		{
+			maxAllowedTowers = 4,
+			enemies = {
+				enemyTypes.paralegal,
+				80,
+				enemyTypes.paralegal,
+				90,
+				enemyTypes.judge,
+				90,
+				enemyTypes.judge
+			}
+		}
+	}
+	return ret
 end
 
 function makeCursor()
@@ -142,7 +180,7 @@ enemyTypes = {
 		name = 'paralegal',
 		attackCooldown = 10,
 		attackStrength = 2,
-		movementSpeed = 40,
+		movementSpeed = 20,
 		health = 40,
 		spriteNumber = 4
 	},
@@ -150,7 +188,7 @@ enemyTypes = {
 		name = 'judge',
 		attackCooldown = 10,
 		attackStrength = 5,
-		movementSpeed = 20,
+		movementSpeed = 40,
 		health = 100,
 		spriteNumber = 6
 	}
@@ -160,7 +198,7 @@ towerTypes = {
 	standard = {
 		name = 'standard',
 		attackCooldown = 10,
-		attackStrength = 2,
+		attackStrength = 20,
 		targetRange = 75,
 		projectileSpeed = 40,
 		projectileSpriteNumber = 8,
@@ -168,8 +206,8 @@ towerTypes = {
 	},
 	long = {
 		name = 'long',
-		attackCooldown = 10,
-		attackStrength = 2,
+		attackCooldown = 20,
+		attackStrength = 20,
 		targetRange = 200,
 		projectileSpeed = 150,
 		projectileSpriteNumber = 8,
@@ -177,8 +215,8 @@ towerTypes = {
 	},
 	short = {
 		name = 'short',
-		attackCooldown = 10,
-		attackStrength = 2,
+		attackCooldown = 20,
+		attackStrength = 60,
 		targetRange = 40,
 		projectileSpeed = 40,
 		projectileSpriteNumber = 9,
@@ -493,14 +531,9 @@ function _update()
 		return
 	end
 
-	if hasAnimation() then
-		local active, exception = coresume(gs.currentAnimation)
-		if exception then
-			stop(trace(gs.currentAnimation, exception))
-		end
-
-		return
-	end
+	-- if hasAnimation() then
+	-- 	return
+	-- end
 
 	acceptInput()
 
@@ -524,7 +557,45 @@ function _update()
 
 	gs.cursor:update()
 
+	checkNextWave()
+
 	--checkTowerGrasping()
+end
+
+function checkNextWave()
+	if hasAnimation() then
+		return
+	end
+	if #gs.enemies == 0 then
+		gs.currentAnimation = cocreate(function()
+			gs.waveNumber += 1
+			if gs.waveNumber > #gs.waves then
+				return
+			end
+
+			local wave = gs.waves[gs.waveNumber]
+
+			for i = 1, 20 do
+				print('wave number ' .. gs.waveNumber, 50, 50, 7)
+				yield()
+			end
+			
+			gs.maxAllowedTowers = wave.maxAllowedTowers
+			--print()
+			--assert(wave[1] != nil)
+
+			for entry in all(wave.enemies) do
+
+				if type(entry) == 'number' then
+					for i = 0, entry do
+						yield()
+					end
+				else
+					add(gs.enemies, makeEnemy(44, 3, entry))
+				end
+			end
+		end)
+	end
 end
 
 -- function checkTowerGrasping()
@@ -537,7 +608,11 @@ function checkGameOver()
 	if gs.base.isDead then
 		gs.gameOverState = 'lose'
 		gs.isGameOver = true
+	elseif gs.waveNumber > #gs.waves then
+		gs.gameOverState = 'win'
+		gs.isGameOver = true
 	end
+
 end
 
 function clearDead()
@@ -554,7 +629,7 @@ function clearDead()
 end
 
 function drawGameOverWin()
-
+	print('you won!')
 end
 
 function drawGameOverLose()
@@ -668,6 +743,14 @@ function _draw()
 	end
 
 	gs.cursor:draw()
+
+	if hasAnimation() then
+		local active, exception = coresume(gs.currentAnimation)
+		if exception then
+			stop(trace(gs.currentAnimation, exception))
+		end
+	end
+
 	-- Draw
 end
 
