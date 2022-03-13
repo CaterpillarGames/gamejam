@@ -285,7 +285,7 @@ towerTypes = {
 	},
 	long = {
 		name = 'long',
-		attackCooldown = 50,
+		attackCooldown = 30,
 		attackStrength = 5,
 		targetRange = 200,
 		projectileSpeed = 150,
@@ -717,10 +717,13 @@ function clearDead()
 end
 
 function drawGameOverWin()
-	print('you won!')
+	color(7)
+	print('\n you won! you irrigated the dessert\n\n')
+	print(' press x to play again')
 end
 
 function drawGameOverLose()
+	color(7)
 	print('\n you lost!\n\n')
 	print(' press x to try wave ' .. gs.waveNumber .. ' again')
 end
@@ -842,8 +845,6 @@ function _draw()
 
 	-- Draw
 end
-
-
 
 __gfx__
 00056000aaaeeaaa88888888aaaddaaaaa0000aaaa0000aaaa0000aaaa0000aa0000000000000000aaaaaaa66666aaaa00000000000000000000000000000000
