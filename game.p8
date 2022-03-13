@@ -61,7 +61,8 @@ function _init()
 			--makeTower(32, 64, towerTypes.standard)
 		},
 		enemies = {
-			makeEnemy(44, 3)
+			makeEnemy(44, 3),
+			makeEnemy(44, 48)
 		},
 		projectiles = {},
 		maxAllowedTowers = 2,
@@ -136,6 +137,7 @@ towerTypes = {
 		name = 'standard',
 		attackCooldown = 10,
 		attackStrength = 2,
+		targetRange = 75,
 		projectileSpeed = 40,
 		projectileSpriteNumber = 8,
 		towerSpriteNumber = 1
@@ -144,7 +146,8 @@ towerTypes = {
 		name = 'long',
 		attackCooldown = 10,
 		attackStrength = 2,
-		projectileSpeed = 40,
+		targetRange = 200,
+		projectileSpeed = 150,
 		projectileSpriteNumber = 8,
 		towerSpriteNumber = 3
 	},
@@ -152,6 +155,7 @@ towerTypes = {
 		name = 'short',
 		attackCooldown = 10,
 		attackStrength = 2,
+		targetRange = 40,
 		projectileSpeed = 40,
 		projectileSpriteNumber = 9,
 		towerSpriteNumber = 2
@@ -167,6 +171,7 @@ function makeTower(x, y, type)
 			return makeTower(self.pos.x, self.pos.y, self.type)
 		end,
 		type = type,
+		targetRange = type.targetRange,
 		towerSpriteNumber = type.towerSpriteNumber,
 		attackStrength = type.attackStrength,
 		attackCooldown = type.attackCooldown,
@@ -177,7 +182,34 @@ function makeTower(x, y, type)
 		lockedOnEnemy = nil,
 		setEnemyLock = function(self)
 			-- TODO
-			self.lockedOnEnemy = gs.enemies[1]
+			--self.lockedOnEnemy = gs.enemies[1]
+			local targetEnemy = nil
+			local distance = nil
+			for enemy in all(self:getEnemiesInRange()) do
+				local curDist = self.pos:eucDist(enemy.pos)
+				if targetEnemy == nil then
+					targetEnemy = enemy
+					distance = curDist
+				else
+					if curDist > distance and self.type.name == towerTypes.long.name then
+						targetEnemy = enemy
+						distance = curDist
+					elseif curDist < distance then
+						targetEnemy = enemy
+						distance = curDist
+					end
+				end
+			end
+			self.lockedOnEnemy = targetEnemy
+		end,
+		getEnemiesInRange = function(self)
+			local ret = {}
+			for enemy in all(gs.enemies) do
+				if self.pos:isWithin(enemy.pos, self.targetRange) then
+					add(ret, enemy)
+				end
+			end
+			return ret
 		end,
 		targetTheta = function(self)
 			if self.isModel then
