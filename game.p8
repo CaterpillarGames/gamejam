@@ -42,7 +42,7 @@ gameOverLose = 'lose'
 
 poke(0x5f2d, 0x1 | 0x2)
 
-function _init()
+function _init(initWaveNumber)
 	gs = {
 		dt = 1/30,
 		isGameOver = false,
@@ -66,7 +66,7 @@ function _init()
 		},
 		projectiles = {},
 		waves = makeWaves(),
-		waveNumber = 0,
+		waveNumber = (initWaveNumber or 1) - 1,
 		maxAllowedTowers = 2,
 		canGrabTower = function(self, tower)
 			return #self.towers < self.maxAllowedTowers
@@ -82,29 +82,100 @@ function makeWaves()
 		{
 			maxAllowedTowers = 1,
 			enemies = {
+				enemyTypes.paralegal,
+				30,
+				enemyTypes.paralegal,
+				30,
 				enemyTypes.paralegal
 			}
 		},
-
 		{
 			maxAllowedTowers = 2,
 			enemies = {
 				enemyTypes.paralegal,
+				30,
 				enemyTypes.paralegal,
+				30,
+				enemyTypes.paralegal,
+				90,
+				enemyTypes.judge,
+				30,
+				enemyTypes.judge,
+				30,
 				enemyTypes.judge
 			}
 		},
 
 		{
-			maxAllowedTowers = 4,
+			maxAllowedTowers = 3,
 			enemies = {
 				enemyTypes.paralegal,
-				80,
+				30,
+				enemyTypes.paralegal,
+				30,
 				enemyTypes.paralegal,
 				90,
 				enemyTypes.judge,
+				15,
+				enemyTypes.judge,
+				15,
+				enemyTypes.judge,
+				30,
+				enemyTypes.paralegal,
+				30,
+				enemyTypes.paralegal
+			}
+		},
+		{
+			maxAllowedTowers = 4,
+			enemies = {
+				enemyTypes.paralegal,
+				30,
+				enemyTypes.paralegal,
+				30,
+				enemyTypes.paralegal,
 				90,
-				enemyTypes.judge
+				enemyTypes.judge,
+				15,
+				enemyTypes.judge,
+				15,
+				enemyTypes.politician,
+				30,
+				enemyTypes.politician,
+				10,
+				enemyTypes.judge,
+				15,
+				enemyTypes.judge,
+				30,
+				enemyTypes.paralegal,
+				30,
+				enemyTypes.paralegal
+			}
+		},
+		{
+			maxAllowedTowers = 5,
+			enemies = {
+				enemyTypes.paralegal,
+				30,
+				enemyTypes.paralegal,
+				30,
+				enemyTypes.paralegal,
+				90,
+				enemyTypes.judge,
+				15,
+				enemyTypes.judge,
+				15,
+				enemyTypes.politician,
+				30,
+				enemyTypes.politician,
+				150,
+				enemyTypes.judge,
+				15,
+				enemyTypes.judge,
+				30,
+				enemyTypes.politician,
+				30,
+				enemyTypes.politician
 			}
 		}
 	}
@@ -179,7 +250,7 @@ enemyTypes = {
 	paralegal = {
 		name = 'paralegal',
 		attackCooldown = 10,
-		attackStrength = 2,
+		attackStrength = 3,
 		movementSpeed = 20,
 		health = 40,
 		spriteNumber = 4
@@ -187,18 +258,26 @@ enemyTypes = {
 	judge = {
 		name = 'judge',
 		attackCooldown = 10,
-		attackStrength = 5,
+		attackStrength = 8,
 		movementSpeed = 40,
-		health = 100,
+		health = 30,
 		spriteNumber = 6
+	},
+	politician = {
+		name = 'politician',
+		attackCooldown = 10,
+		attackStrength = 25,
+		movementSpeed = 10,
+		health = 300,
+		spriteNumber = 20
 	}
 }
 
 towerTypes = {
 	standard = {
 		name = 'standard',
-		attackCooldown = 10,
-		attackStrength = 20,
+		attackCooldown = 30,
+		attackStrength = 10,
 		targetRange = 75,
 		projectileSpeed = 40,
 		projectileSpriteNumber = 8,
@@ -206,8 +285,8 @@ towerTypes = {
 	},
 	long = {
 		name = 'long',
-		attackCooldown = 20,
-		attackStrength = 20,
+		attackCooldown = 50,
+		attackStrength = 5,
 		targetRange = 200,
 		projectileSpeed = 150,
 		projectileSpriteNumber = 24,
@@ -215,8 +294,8 @@ towerTypes = {
 	},
 	short = {
 		name = 'short',
-		attackCooldown = 20,
-		attackStrength = 60,
+		attackCooldown = 30,
+		attackStrength = 20,
 		targetRange = 40,
 		projectileSpeed = 40,
 		projectileSpriteNumber = 9,
@@ -531,7 +610,11 @@ function _update()
 		end
 		-- Restart
 		if btnp(dirs.x) then
-			_init()
+			if gs.gameOverState == 'lose' then
+				_init(gs.waveNumber)
+			else
+				_init()
+			end
 		end
 		return
 	end
@@ -638,7 +721,8 @@ function drawGameOverWin()
 end
 
 function drawGameOverLose()
-	print('you lost!')
+	print('\n you lost!\n\n')
+	print(' press x to try wave ' .. gs.waveNumber .. ' again')
 end
 
 function makeEnemy(x, y, type)
@@ -760,6 +844,7 @@ function _draw()
 end
 
 
+
 __gfx__
 00056000aaaeeaaa88888888aaaddaaaaa0000aaaa0000aaaa0000aaaa0000aa0000000000000000aaaaaaa66666aaaa00000000000000000000000000000000
 00666c00aaaeeaaaa888888aaaadaaaaaa0fffaaaa0fffaaaa0fffaaaa0fffaa00000000000cc000aaaaaa6665656aaa00000000000000000000000000000000
@@ -769,14 +854,14 @@ __gfx__
 00056cc0aaeeceaaa88ccc8aaaaddaaaaa0077aaaa0077aaaa0000aaaa0000aa000ccc0000cccc006aaaaaac666666aa00000000000000000000000000000000
 00666cc0aaeeeeaaa888888aaadcddaaaa0000aaaa0000aaaa0000aaaa0000aa0000c000000cc0006666aaaac6666aaa00000000000000000000000000000000
 06666cc0aaaeeaaaaa0000aaaaddddaaaa0aa0aaa0aaaa0aaa0000aaaa0000aa0000000000000000acccacaca56aaaaa00000000000000000000000000000000
-00010000000000000000000000000000aa0000aaaaaaaaaa00000000000000000000000c66666666accccacaa56aaaaa00000000000000000000000000000000
-00171000001110000000000000000000aa0fffaaaa0000aa0000000000000000000000c0666566d6acccaaaaa56aaaa600000000000000000000000000000000
-00171100017771000000000000000000aaffffaaaa0fffaa000000000000000000000c0066666666acccaaaa6666aa6a00000000000000000000000000000000
-00177f1001177f100000000000000000a007700aaaffffaa00000000000000000000c000666665666ccca66a6666aa6a00000000000000000000000000000000
-01777f1017177f1000000000000000000a0770a0a007700a0000000000000000000c0000666666666ccc6aa666666a6a00000000000000000000000000000000
-01777f1017777f100000000000000000aa0000aaa007700a000000000000000000c00000666656666ccc66666666666600000000000000000000000000000000
-001fff1001ffff100000000000000000aa0000aaaa0000aa00000000000000000c000000d6666666666666605666668600000000000000000000000000000000
-00011100001111000000000000000000aa0000aaa000000a0000000000000000c000000066666666666666605666666600000000000000000000000000000000
+00010000000000000000000000000000aa4444aaaa4444aa00000000000000000000000c66666666accccacaa56aaaaa00000000000000000000000000000000
+00171000001110000000000000000000aa4fffaaaa4fffaa0000000000000000000000c0666566d6acccaaaaa56aaaa600000000000000000000000000000000
+00171100017771000000000000000000aaffffaaaaffffaa000000000000000000000c0066666666acccaaaa6666aa6a00000000000000000000000000000000
+00177f1001177f100000000000000000a111781aa111781a00000000000000000000c000666665666ccca66a6666aa6a00000000000000000000000000000000
+01777f1017177f1000000000000000001a1178a1a111781a0000000000000000000c0000666666666ccc6aa666666a6a00000000000000000000000000000000
+01777f1017777f100000000000000000aa1177aaaa1177aa000000000000000000c00000666656666ccc66666666666600000000000000000000000000000000
+001fff1001ffff100000000000000000aa1111aaaa1111aa00000000000000000c000000d6666666666666605666668600000000000000000000000000000000
+00011100001111000000000000000000aa1aa1aaa1aaaa1a0000000000000000c000000066666666666666605666666600000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
