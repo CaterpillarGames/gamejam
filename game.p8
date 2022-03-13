@@ -61,7 +61,11 @@ function _init()
 		enemies = {
 			makeEnemy(44, 3)
 		},
-		projectiles = {}
+		projectiles = {},
+		maxAllowedTowers = 2,
+		canGrabTower = function(self, tower)
+			return #self.towers < self.maxAllowedTowers
+		end
 	}
 
 end
@@ -83,7 +87,7 @@ function makeCursor()
 			if self.graspedEntity == nil then
 				local hovered = self:getHoveredTower()
 				if hovered != nil then
-					if self.isLeadingClick then
+					if self.isLeadingClick and gs:canGrabTower(hovered) then
 						self.graspedEntity = hovered:clone()
 					end
 				end
@@ -110,7 +114,11 @@ function makeCursor()
 			end
 			local hovered = self:getHoveredTower()
 			if hovered != nil then
-				rect(hovered.pos.x - 2, hovered.pos.y - 3, hovered.pos.x + 10, hovered.pos.y + 9)
+				local outlineColor = 8
+				if gs:canGrabTower(hovered) then
+					outlineColor = 7
+				end
+				rect(hovered.pos.x - 2, hovered.pos.y - 3, hovered.pos.x + 10, hovered.pos.y + 9, outlineColor)
 			end
 			local spriteNumber = 16
 			if self.graspedEntity != nil then
