@@ -53,7 +53,9 @@ function _init()
 		cursor = makeCursor(),
 		base = makeBase(),
 		reserveTowers = {
-			makeTower(8, 116, towerTypes.standard)
+			makeTower(8, 116, towerTypes.standard),
+			makeTower(20, 116, towerTypes.short),
+			makeTower(32, 116, towerTypes.long),
 		},
 		towers = {
 			--makeTower(32, 64, towerTypes.standard)
@@ -581,7 +583,7 @@ function makeEnemy(x, y)
 end
 
 function _draw()
-	cls(9)
+	cls(4)
 	if gs.isGameOver then
 		if gs.gameOverState == gameOverWin then
 			drawGameOverWin()
