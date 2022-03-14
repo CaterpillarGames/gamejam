@@ -664,7 +664,7 @@ function checkNextWave()
 			local wave = gs.waves[gs.waveNumber]
 
 			for i = 1, 20 do
-				print('wave number ' .. gs.waveNumber, 50, 50, 7)
+				print('wave number ' .. gs.waveNumber, 40, 57, 0)
 				yield()
 			end
 			
@@ -717,15 +717,17 @@ function clearDead()
 end
 
 function drawGameOverWin()
+	cls()
 	color(7)
 	print('\n you won! you irrigated the dessert\n\n')
-	print(' press x to play again')
+	print(' press ❎ to play again')
 end
 
 function drawGameOverLose()
+	cls()
 	color(7)
 	print('\n you lost!\n\n')
-	print(' press x to try wave ' .. gs.waveNumber .. ' again')
+	print(' press ❎ to try wave ' .. gs.waveNumber .. ' again')
 end
 
 function makeEnemy(x, y, type)
@@ -800,7 +802,7 @@ function makeEnemy(x, y, type)
 			-- 	text = 'ENEMY'
 			-- end
 			-- print(text, self.pos.x, self.pos.y, 7)
-			print(self.health, self.pos.x, self.pos.y+6, 7)
+			-- print(self.health, self.pos.x, self.pos.y+6, 7)
 			palt()
 		end
 	}
